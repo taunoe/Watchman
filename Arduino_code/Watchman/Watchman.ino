@@ -12,7 +12,8 @@ Arduino UF2 file location:
 #include <Adafruit_NeoPixel.h>
 
 #define DEBUG
-#include "utils_debug.h"
+#include "utils_debug.h" // DEBUG_PRINT("Message");
+#include "colors.h"      // Predefined colors
 
 /*
 // XIAO RP2040
@@ -39,6 +40,25 @@ Adafruit_NeoPixel strip(RGB_LED_COUNT, RGB_LED_PIN, NEO_GRB + NEO_KHZ800);
 // Human Radar sensor
 const int RADAR_SENSOR_PIN = D4;
 
+int colors[NUM_OF_COLORS][3] = {
+  {AMBER},
+  {AQUA},
+  {BLUE},
+  {CYAN},
+  {GOLD},
+  {GREEN},
+  {JADE},
+  {MAGENTA},
+  {OLD_LACE},
+  {ORANGE},
+  {PINK},
+  {PURPLE},
+  {RED},
+  {TEAL},
+  {WHITE},
+  {YELLOW}
+};
+
 void setup() {
   strip.begin();
   strip.show();            // Turn OFF all pixels ASAP
@@ -60,7 +80,13 @@ void loop() {
   if ( (is_movment == true) && (flag == false) ) {
     DEBUG_PRINT("Motion Detected");
 
-    wipe_color(0, 0, 255, 50);  // Blue, 50ms
+    int r = random(255);
+    int g = random(255);
+    int b = random(255);
+    //wipe_color(r, g, b, 50);  // 50ms
+    //wipe_color(ORANGE, 50);
+    int nr = random(NUM_OF_COLORS);
+    wipe_color(colors[nr][0], colors[nr][1], colors[nr][2], 50);
     wipe_off(50); 
     flag = true;
   }
