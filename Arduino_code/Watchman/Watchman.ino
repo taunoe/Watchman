@@ -2,7 +2,7 @@
 File:      Watchman.ino
 MCU Board: Seeed XIAO RP2040
 Started:   2023-01-02
-Edited:    2023-01-12
+Edited:    2023-01-15
 Author:    Tauno Erik
 
 Arduino UF2 file location:
@@ -15,12 +15,18 @@ Arduino UF2 file location:
 #include "utils_debug.h" // DEBUG_PRINT("Message");
 #include "colors.h"      // Predefined colors
 
-/*
-// XIAO RP2040
-const int RGB_ON_BOARD_PIN = 12;
-const int RGB_ON_BOARD_POWER_PIN = 11;
-const int NUMPIXELS_ON_BOARD = 1;
-*/
+// LED directions
+#define CW  0  // ClockWise
+#define CCW 1  // CounterClockWise
+
+
+// XIAO RP2040 on board RGB LED
+const int BOARD_RGB_PIN = 12;
+const int BOARD_RGB_POWER_PIN = 11;
+const int PIXELS_ON_BOARD = 1;
+
+Adafruit_NeoPixel on_board(PIXELS_ON_BOARD, BOARD_RGB_PIN, NEO_GRB + NEO_KHZ800);
+
 
 // Circular RGB LED stripe
 const int RGB_LED_PIN = D6;
@@ -59,6 +65,8 @@ int colors[NUM_OF_COLORS][3] = {
   {YELLOW}
 };
 
+
+// Core 0
 void setup() {
   strip.begin();
   strip.show();            // Turn OFF all pixels ASAP
@@ -71,7 +79,6 @@ void setup() {
   pinMode(RADAR_SENSOR_PIN, INPUT);
 }
 
-
 void loop() {
 
   bool is_movment = digitalRead(RADAR_SENSOR_PIN);
@@ -79,16 +86,19 @@ void loop() {
 
   if ( (is_movment == true) && (flag == false) ) {
     DEBUG_PRINT("Motion Detected");
-
-    int r = random(255);
-    int g = random(255);
-    int b = random(255);
-    //wipe_color(r, g, b, 50);  // 50ms
-    //wipe_color(ORANGE, 50);
-    int nr = random(NUM_OF_COLORS);
-    wipe_color(colors[nr][0], colors[nr][1], colors[nr][2], 50);
-    wipe_off(50); 
     flag = true;
+
+    //int r = random(255);
+    //int g = random(255);
+    //int b = random(255);
+
+    // Sellect one of predefined colors
+    int nr = random(NUM_OF_COLORS);
+
+    wipe_color(colors[nr][0], colors[nr][1], colors[nr][2], 50);
+    //fade_out(colors[nr][0], colors[nr][1], colors[nr][2]);
+    delay(500);
+    wipe_off(50, CCW);
   }
 
   if (is_movment == false) {
@@ -112,20 +122,70 @@ void loop() {
   */
 }
 
-/*
-*/
-void wipe_off(int wait) {
-  DEBUG_PRINT("wipe_off()");
 
-  for(int i=0; i<strip.numPixels(); i++) {
-    uint32_t color = strip.Color(0, 0, 0);
-    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
-    strip.show();
-    delay(wait);
-  }
+// Core 1
+void setup1() {
+  DEBUG_PRINT("Core 1 setup\n");
+  /*
+  on_board.begin();
+  pinMode(BOARD_RGB_POWER_PIN, OUTPUT);
+  digitalWrite(BOARD_RGB_POWER_PIN, HIGH);
+  on_board.setBrightness(60);
+  */
 }
 
+void loop1() {
+  //Serial.printf("\nCore temperature: %2.1fC\n", analogReadTemp()); // It does not look right ?!
 
+/*
+  // Hue of first pixel runs 5 complete loops through the color wheel.
+  // Color wheel has a range of 65536 but it's OK if we roll over, so
+  // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
+  // means we'll make 5*65536/256 = 1280 passes through this loop:
+  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+    // strip.rainbow() can take a single argument (first pixel hue) or
+    // optionally a few extras: number of rainbow repetitions (default 1),
+    // saturation and value (brightness) (both 0-255, similar to the
+    // ColorHSV() function, default 255), and a true/false flag for whether
+    // to apply gamma correction to provide 'truer' colors (default true).
+    on_board.rainbow(firstPixelHue);
+    // Above line is equivalent to:
+    // strip.rainbow(firstPixelHue, 1, 255, 255, true);
+    on_board.show(); // Update strip with new contents
+    delay(10);  // Pause for a moment
+  }
+*/
+}
+
+/*
+Turn pixels OFF, clockwise
+*/
+void wipe_off(int wait, int dir) {
+  DEBUG_PRINT("wipe_off()");
+
+  if (dir == CW) {
+    uint32_t color = strip.Color(0, 0, 0);
+    for (int i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+      strip.show();
+      delay(wait);
+    }
+  }
+  if (dir == CCW) {
+    uint32_t color = strip.Color(0, 0, 0);
+    for (int i = strip.numPixels(); i >= 0; i--) {
+      strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+      strip.show();
+      delay(wait);
+    }
+
+  }
+
+}
+
+/*
+Turn pixels ON, clockwise
+*/
 void wipe_color(int r, int g, int b, int wait) {
   uint32_t color = strip.Color(r, g, b);
 
@@ -134,6 +194,19 @@ void wipe_color(int r, int g, int b, int wait) {
     strip.show();                          //  Update strip to match
     delay(wait);
   }
+}
+
+/*
+*/
+void fade_out(int r, int g, int b) {
+  uint32_t color = strip.Color(r, g, b);
+
+  for (int i=100; i>0; --i) {
+  strip.setBrightness(i);
+  strip.show();
+  delay(10);
+  }
+  
 }
 
 

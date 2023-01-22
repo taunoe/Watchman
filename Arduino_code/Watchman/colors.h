@@ -5,7 +5,7 @@ Tauno Erik
 */
 
 #define NUM_OF_COLORS 16
-
+//      NAME     r, g, b
 #define AMBER    255, 100, 0
 #define AQUA     50, 255, 255
 #define BLUE     0, 0, 255

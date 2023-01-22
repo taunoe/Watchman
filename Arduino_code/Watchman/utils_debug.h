@@ -7,6 +7,12 @@ Tauno Erik
 
 #ifdef DEBUG
   #define DEBUG_PRINT(x) \
+  Serial.print(x);
+
+  #define DEBUG_PRINTLN(x) \
+  Serial.println(x);
+
+  #define DEBUG_PRINT_ALL(x) \
   Serial.print(millis()); \
   Serial.print(": "); \
   Serial.print(__PRETTY_FUNCTION__); \
@@ -15,7 +21,8 @@ Tauno Erik
   Serial.print(":"); \
   Serial.print(__LINE__); \
   Serial.print(" "); \
-  Serial.print(x);
+  Serial.println(x);
 #else
   #define DEBUG_PRINT(x)
+  #define DEBUG_PRINT_ALL(x)
 #endif
