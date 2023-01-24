@@ -60,5 +60,10 @@ I have defined some colours for RGB LEDs:
 
 The rest of the code is on the GitHub repository.
 
+## Links
+
+- [The Watchman Electronic Sculpture](https://taunoerik.art/2023/01/22/the-watchman-electronic-sculpture/)
+- [Project on Hacster.io](https://www.hackster.io/taunoerik)
+
 ___
 2023 Tauno Erik
